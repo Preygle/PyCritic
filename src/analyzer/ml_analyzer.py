@@ -1,298 +1,273 @@
-# This file analyzes Python code using beginner-friendly logic and ML features (optional)
-# It checks things like variable names, formatting, readability, and gives tips
-
-import ast  # For understanding the structure of Python code
+import ast
 import re
-from typing import Dict, List, Any, Tuple
-from collections import Counter
+from collections import defaultdict
 import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 import pickle
-import os
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, classification_report
 
 
-class MLAnalyzer:
+class MLCodeAnalyzer:
     def __init__(self):
-        # ML model for checking naming (optional, not required for beginners)
-        self.naming_model = None
-        self.quality_model = None  # ML model for overall code quality
+        # Initialize classifiers with reduced complexity
+        self.naming_classifier = RandomForestClassifier(
+            n_estimators=50, random_state=42)
+        self.quality_classifier = RandomForestClassifier(
+            n_estimators=50, random_state=42)
+        self.style_classifier = RandomForestClassifier(
+            n_estimators=50, random_state=42)
+
+        # Simplified text vectorizers
+        self.name_vectorizer = TfidfVectorizer(max_features=500)
+        self.code_vectorizer = TfidfVectorizer(max_features=1000)
+
+        self.scaler = StandardScaler()
         self.is_trained = False
-        self.feature_names = []  # Names of features used in ML model
 
-    def analyze_code(self, code_string: str) -> Dict[str, Any]:
-        """Main function to analyze code in a beginner-friendly way"""
+    def extract_ml_features(self, code_string: str) -> np.ndarray:
+        """Extract numerical features for ML models using simpler approaches"""
 
-        # Step 1: Extract useful information from code
-        features = self._extract_simple_features(code_string)
-
-        # Step 2: Use the features to generate feedback
-        ml_results = {
-            'readability_score': self._calculate_readability_score(features),
-            'naming_quality': self._assess_naming_quality(code_string),
-            'code_style_tips': self._generate_style_tips(features),
-            'beginner_suggestions': self._get_beginner_suggestions(features),
-            'good_practices_found': self._identify_good_practices(code_string)
-        }
-
-        return ml_results
-
-    def _extract_simple_features(self, code_string: str) -> Dict[str, Any]:
-        """Break down code and collect simple, understandable info"""
-
-        lines = code_string.strip().split('\n')  # Break into lines
-        # Ignore empty lines
+        lines = code_string.split('\n')
         non_empty_lines = [line for line in lines if line.strip()]
 
-        # Try parsing the code
         try:
             tree = ast.parse(code_string)
         except SyntaxError:
-            # If the code has errors, return minimal info
-            return {
-                'total_lines': len(lines),
-                'non_empty_lines': len(non_empty_lines),
-                'has_syntax_error': True,
-                'avg_line_length': sum(len(line) for line in lines) / len(lines) if lines else 0
-            }
+            return np.zeros(20)  # Reduced feature count
 
-        # If code is valid, calculate all beginner-friendly features
-        features = {
-            'total_lines': len(lines),
-            'non_empty_lines': len(non_empty_lines),
-            'blank_lines': len(lines) - len(non_empty_lines),
-            'avg_line_length': sum(len(line) for line in lines) / len(lines) if lines else 0,
+        # Basic code metrics
+        line_count = len(lines)
+        non_empty_count = len(non_empty_lines)
+        avg_line_len = sum(len(line) for line in lines) / \
+            line_count if line_count else 0
+        max_line_len = max(len(line) for line in lines) if lines else 0
+        blank_lines = sum(1 for line in lines if not line.strip())
 
-            'function_count': len([n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]),
-            'class_count': len([n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)]),
-            'variable_count': len(self._get_variable_names(tree)),
+        # AST-based features
+        functions = [n for n in ast.walk(
+            tree) if isinstance(n, ast.FunctionDef)]
+        classes = [n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)]
+        variables = self._extract_variables(tree)
 
-            'descriptive_names_ratio': self._calculate_descriptive_names_ratio(tree),
-            'snake_case_compliance': self._check_snake_case_compliance(tree),
-            'meaningful_function_names': self._check_meaningful_function_names(tree),
+        func_count = len(functions)
+        class_count = len(classes)
+        var_count = len(variables)
+        complexity = self._calculate_cyclomatic_complexity(tree)
+        nesting = self._calculate_nesting_depth(tree)
 
-            # How deep are if/else/loops
-            'max_nesting_level': self._calculate_simple_nesting(tree),
-            'has_comments': self._has_comments(code_string),
-            'uses_good_spacing': self._check_spacing_patterns(code_string),
+        # Naming pattern features
+        all_names = [var['name']
+                     for var in variables] + [f.name for f in functions]
+        name_len = sum(len(name) for name in all_names) / \
+            len(all_names) if all_names else 0
+        snake_case = sum(
+            1 for name in all_names if '_' in name and name.islower())
+        camel_case = sum(1 for name in all_names if name !=
+                         name.lower() and '_' not in name)
 
-            'has_syntax_error': False,
-            'uses_main_guard': self._has_main_guard(tree),
-            'has_docstrings': self._has_docstrings(tree)
-        }
+        # Code style features
+        operators = sum(code_string.count(op)
+                        for op in ['+', '-', '*', '/', '%', '=', '<', '>'])
+        keywords = sum(code_string.count(kw)
+                       for kw in ['if', 'else', 'for', 'while', 'def', 'class'])
+        comments = sum(1 for line in lines if line.strip().startswith('#'))
+        comment_ratio = comments / line_count if line_count else 0
+
+        # Combine all features into a numpy array
+        features = np.array([
+            line_count, non_empty_count, avg_line_len, max_line_len, blank_lines,
+            func_count, class_count, var_count, complexity, nesting,
+            name_len, snake_case, camel_case,
+            operators, keywords, comment_ratio,
+            0, 0, 0, 0  # Padding for consistent feature count
+        ], dtype=float)
 
         return features
 
-    def _calculate_readability_score(self, features: Dict) -> Dict[str, Any]:
-        """Give a score and tips for how easy the code is to read"""
+    def train_models(self, training_data):
+        """Train ML models with simplified data processing"""
 
-        score = 0
-        max_score = 100
-        feedback = []
+        print("Training ML models...")
 
-        # Check line length
-        if features['avg_line_length'] <= 80:
-            score += 20
-            feedback.append("✓ Good line length - easy to read")
-        else:
-            feedback.append(
-                "⚠ Lines are too long - try to keep under 80 characters")
+        # Prepare training data with basic lists
+        X_features = []
+        X_names = []
+        X_code_text = []
+        y_quality = []
+        y_naming = []
+        y_style = []
 
-        # Check naming
-        if features['descriptive_names_ratio'] > 0.7:
-            score += 25
-            feedback.append("✓ Good use of descriptive variable names")
-        elif features['descriptive_names_ratio'] > 0.4:
-            score += 15
-            feedback.append("⚠ Some variable names could be more descriptive")
-        else:
-            feedback.append(
-                "⚠ Use more descriptive variable names (avoid x, y, temp)")
+        for sample in training_data:
+            code = sample['code']
 
-        # Check structure
-        if features['function_count'] > 0:
-            score += 10
-            feedback.append("✓ Good use of functions")
+            # Extract features
+            features = self.extract_ml_features(code)
+            X_features.append(features)
 
-        if features['has_comments']:
-            score += 10
-            feedback.append("✓ Good use of comments")
-        else:
-            feedback.append("⚠ Add comments to explain your code")
+            # Extract names as text
+            names = self._extract_all_names(code)
+            X_names.append(' '.join(names))
+            X_code_text.append(code)
 
-        # Spacing and formatting
-        if features['uses_good_spacing']:
-            score += 20
-            feedback.append("✓ Good spacing and formatting")
-        else:
-            feedback.append(
-                "⚠ Improve spacing around operators and after commas")
+            # Get labels
+            y_quality.append(sample.get('quality_score', 0))
+            y_naming.append(sample.get('naming_score', 0))
+            y_style.append(sample.get('style_score', 0))
 
-        # Bonus points for best practices
-        if features['has_docstrings']:
-            score += 8
-            feedback.append("✓ Excellent! You're using docstrings")
+        # Convert to numpy arrays
+        X_features = np.array(X_features)
+        X_features_scaled = self.scaler.fit_transform(X_features)
 
-        if features['uses_main_guard']:
-            score += 7
-            feedback.append("✓ Great! You're using if __name__ == '__main__'")
+        # Vectorize text features
+        X_names_vec = self.name_vectorizer.fit_transform(X_names).toarray()
+        X_code_vec = self.code_vectorizer.fit_transform(X_code_text).toarray()
 
-        return {
-            'score': min(score, max_score),
-            'grade': self._score_to_grade(score),
-            'feedback': feedback,
-            'areas_to_improve': self._get_improvement_areas(features)
-        }
+        # Combine features
+        X_combined = np.concatenate(
+            [X_features_scaled, X_names_vec, X_code_vec], axis=1)
 
-    def _assess_naming_quality(self, code_string: str) -> Dict[str, Any]:
-        """Check if variable and function names are meaningful or generic"""
+        # Convert scores to categories
+        y_quality_cat = [self._score_to_category(score) for score in y_quality]
+        y_naming_cat = [self._score_to_category(score) for score in y_naming]
+        y_style_cat = [self._score_to_category(score) for score in y_style]
 
-        try:
-            tree = ast.parse(code_string)
-        except SyntaxError:
-            return {'error': 'Cannot analyze naming due to syntax errors'}
+        # Train models
+        self.quality_classifier.fit(X_combined, y_quality_cat)
+        self.naming_classifier.fit(X_combined, y_naming_cat)
+        self.style_classifier.fit(X_combined, y_style_cat)
 
-        variable_names = self._get_variable_names(tree)
-        function_names = [node.name for node in ast.walk(
-            tree) if isinstance(node, ast.FunctionDef)]
+        self.is_trained = True
+        print("Training complete!")
 
-        poor_names = ['x', 'y', 'z', 'temp', 'data',
-                      'var', 'a', 'b', 'c', 'i', 'j', 'k']
+    def predict_code_quality(self, code_string: str) -> dict:
+        """Make predictions with simplified output"""
 
-        naming_issues = []
-        good_names = []
+        if not self.is_trained:
+            return {"error": "Models not trained yet"}
 
-        for name in variable_names + function_names:
-            if name.lower() in poor_names:
-                naming_issues.append({
-                    'name': name,
-                    'issue': 'Too generic - use descriptive names',
-                    'suggestions': self._suggest_better_names(name)
-                })
-            elif len(name) >= 3 and '_' in name:
-                good_names.append(name)
+        # Extract features
+        features = self.extract_ml_features(code_string)
+        features_scaled = self.scaler.transform([features])
+
+        # Extract text features
+        names = self._extract_all_names(code_string)
+        names_vec = self.name_vectorizer.transform([' '.join(names)]).toarray()
+        code_vec = self.code_vectorizer.transform([code_string]).toarray()
+
+        # Combine features
+        X_combined = np.concatenate(
+            [features_scaled, names_vec, code_vec], axis=1)
+
+        # Make predictions
+        quality_pred = self.quality_classifier.predict(X_combined)[0]
+        naming_pred = self.naming_classifier.predict(X_combined)[0]
+        style_pred = self.style_classifier.predict(X_combined)[0]
 
         return {
-            'total_names': len(variable_names + function_names),
-            'good_names': good_names,
-            'naming_issues': naming_issues,
-            'naming_score': max(0, 100 - (len(naming_issues) * 20))
+            'overall_quality': quality_pred,
+            'naming_quality': naming_pred,
+            'style_quality': style_pred,
+            'suggestions': self._generate_basic_suggestions(quality_pred, naming_pred, style_pred)
         }
 
-    def _generate_style_tips(self, features: Dict) -> List[str]:
-        """Give basic tips to improve formatting and structure"""
-
-        tips = []
-
-        if features['avg_line_length'] > 100:
-            tips.append(
-                "💡 Tip: Break long lines into multiple shorter lines for better readability")
-
-        if features['function_count'] == 0 and features['total_lines'] > 20:
-            tips.append(
-                "💡 Tip: Consider breaking your code into functions - it makes it easier to read and test")
-
-        if not features['has_comments'] and features['total_lines'] > 10:
-            tips.append(
-                "💡 Tip: Add comments to explain what your code does - your future self will thank you!")
-
-        if features['descriptive_names_ratio'] < 0.5:
-            tips.append(
-                "💡 Tip: Use descriptive variable names like 'student_name' instead of 'x'")
-
-        if features['max_nesting_level'] > 3:
-            tips.append(
-                "💡 Tip: Try to reduce nesting levels - consider using functions or early returns")
-
-        return tips
-
-    def _get_beginner_suggestions(self, features: Dict) -> List[Dict[str, str]]:
-        """Specific small tips based on what the code is missing"""
-
-        suggestions = []
-
-        if features['has_syntax_error']:
-            suggestions.append({
-                'priority': 'high',
-                'category': 'Syntax',
-                'suggestion': 'Fix syntax errors first - Python needs correct syntax to run',
-                'example': 'Check for missing colons (:) after if statements and function definitions'
-            })
-
-        if not features['uses_good_spacing']:
-            suggestions.append({
-                'priority': 'medium',
-                'category': 'Formatting',
-                'suggestion': 'Add spaces around operators and after commas',
-                'example': 'Write "x = 5 + 3" instead of "x=5+3"'
-            })
-
-        if features['descriptive_names_ratio'] < 0.6:
-            suggestions.append({
-                'priority': 'medium',
-                'category': 'Naming',
-                'suggestion': 'Use descriptive variable names that explain what the data represents',
-                'example': 'Use "student_age" instead of "x" or "age"'
-            })
-
-        if not features['has_comments'] and features['total_lines'] > 15:
-            suggestions.append({
-                'priority': 'low',
-                'category': 'Documentation',
-                'suggestion': 'Add comments to explain complex parts of your code',
-                'example': '# Calculate the average of all test scores'
-            })
-
-        return suggestions
-
-    # Helper Functions Below
-
-    def _get_variable_names(self, tree: ast.AST) -> List[str]:
-        """Get all variable names used in the code"""
-        names = []
+    # Simplified helper methods
+    def _extract_variables(self, tree: ast.AST) -> list:
+        """Simplified variable extraction"""
+        variables = []
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
-                        names.append(target.id)
+                        variables.append(
+                            {'name': target.id, 'line': node.lineno})
+        return variables
+
+    def _extract_all_names(self, code: str) -> list:
+        """Extract all names from code"""
+        names = []
+        try:
+            tree = ast.parse(code)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                    names.append(node.id)
+                elif isinstance(node, ast.FunctionDef):
+                    names.append(node.name)
+        except SyntaxError:
+            pass
         return names
 
-    def _calculate_descriptive_names_ratio(self, tree: ast.AST) -> float:
-        """Check what % of variable names are meaningful"""
-        all_names = self._get_variable_names(tree)
-        if not all_names:
-            return 1.0
+    def _calculate_cyclomatic_complexity(self, tree: ast.AST) -> int:
+        """Simplified complexity calculation"""
+        complexity = 1
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.If, ast.While, ast.For)):
+                complexity += 1
+        return complexity
 
-        generic_names = ['x', 'y', 'z', 'temp', 'data', 'var', 'a', 'b', 'c']
-        descriptive_count = sum(1 for name in all_names if name.lower(
-        ) not in generic_names and len(name) >= 3)
+    def _calculate_nesting_depth(self, tree: ast.AST) -> int:
+        """Simplified nesting depth calculation"""
+        max_depth = 0
+        stack = [(tree, 0)]
 
-        return descriptive_count / len(all_names)
+        while stack:
+            node, depth = stack.pop()
+            max_depth = max(max_depth, depth)
 
-    def _score_to_grade(self, score: int) -> str:
-        """Turn score into a grade"""
-        if score >= 90:
-            return 'A'
-        elif score >= 80:
-            return 'B'
-        elif score >= 70:
-            return 'C'
-        elif score >= 60:
-            return 'D'
-        else:
-            return 'F'
+            if isinstance(node, (ast.If, ast.For, ast.While, ast.With)):
+                new_depth = depth + 1
+                for child in ast.iter_child_nodes(node):
+                    stack.append((child, new_depth))
+            else:
+                for child in ast.iter_child_nodes(node):
+                    stack.append((child, depth))
 
-    def _suggest_better_names(self, poor_name: str) -> List[str]:
-        """Suggest better names for common bad variables"""
-        suggestions = {
-            'x': ['number', 'value', 'coordinate', 'input_value'],
-            'y': ['result', 'output', 'coordinate', 'calculated_value'],
-            'temp': ['temporary_value', 'current_item', 'placeholder'],
-            'data': ['student_data', 'file_content', 'user_input'],
-            'i': ['index', 'counter', 'position'],
-            'j': ['inner_index', 'column', 'second_counter']
-        }
-        return suggestions.get(poor_name.lower(), ['descriptive_name', 'meaningful_variable'])
+        return max_depth
 
+    def _score_to_category(self, score: int) -> str:
+        """Convert score to category"""
+        if score >= 80:
+            return 'excellent'
+        if score >= 60:
+            return 'good'
+        if score >= 40:
+            return 'fair'
+        return 'poor'
 
+    def _generate_basic_suggestions(self, quality, naming, style) -> list:
+        """Generate simple suggestions based on predictions"""
+        suggestions = []
+        if quality in ['fair', 'poor']:
+            suggestions.append("Improve code structure and logic")
+        if naming in ['fair', 'poor']:
+            suggestions.append("Use more descriptive naming conventions")
+        if style in ['fair', 'poor']:
+            suggestions.append("Follow consistent coding style")
+        return suggestions
+
+    def save_models(self, filepath: str):
+        """Save models to file"""
+        with open(filepath, 'wb') as f:
+            pickle.dump({
+                'quality': self.quality_classifier,
+                'naming': self.naming_classifier,
+                'style': self.style_classifier,
+                'name_vec': self.name_vectorizer,
+                'code_vec': self.code_vectorizer,
+                'scaler': self.scaler,
+                'trained': self.is_trained
+            }, f)
+
+    def load_models(self, filepath: str):
+        """Load models from file"""
+        with open(filepath, 'rb') as f:
+            data = pickle.load(f)
+
+        self.quality_classifier = data['quality']
+        self.naming_classifier = data['naming']
+        self.style_classifier = data['style']
+        self.name_vectorizer = data['name_vec']
+        self.code_vectorizer = data['code_vec']
+        self.scaler = data['scaler']
+        self.is_trained = data['trained']
