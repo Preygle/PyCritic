@@ -1,0 +1,17 @@
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+
+# Machine learning models and datasets
+*.pkl
+*.tar*
+*.json
+
+
