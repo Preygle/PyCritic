@@ -36,3 +36,8 @@ Model Link ( 1/ 10th size)
 https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.pkl
 
 Running model on kaggle for easier data loading (and not destroying my cpu)
+
+To Do
+- Integrate non ml and ml based evalutaion 
+- Add web ui for it
+- Create VS code extension for this
