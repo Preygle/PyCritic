@@ -7,8 +7,23 @@ It used multiple decision trees to make prediction,each tree is somewhat differe
 
 F1 Score
 H.M of Precision and Recall
-Precision: True Positives / (True Positives + False Positives)
-Recall :True Positives / (True Positives + False Negatives)
+
+Precision: Ratio of Actual positives by total positives identified. 
+True Positives / (True Positives + False Positives)
+
+Recall :Ratio of identified positives by actual positives. 
+True Positives / (True Positives + False Negatives)
+
+Macro F1 Score
+Mean of F1 scores
+
+Cross-Validation (CV)
+Splits training data in multiple parts, repeats training and testing on different parts (different splits) and averages the result. Makes sure your model isn’t just accidentally doing well on one lucky test split
+Here, cv = 3 means model and training and tested 3 times
+
+Confusion Matrix
+Table used to describe the performance of a classification model.
+Here, using Multiclass Classifier ( more than 2 ) namely (excellent, good, fair, poor)
 
 ​
 
@@ -16,5 +31,8 @@ Scalar fitting is done only on train data as test data is only supposed to be us
 
 Download file from here!!
 http://files.srl.inf.ethz.ch/data/py150.tar.gz
+
+Model Link ( 1/ 10th size)
+https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.pkl
 
 Running model on kaggle for easier data loading (and not destroying my cpu)
