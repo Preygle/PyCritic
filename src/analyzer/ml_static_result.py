@@ -10,7 +10,6 @@ class ProperClass:
         return proper_variable * MAX_VALUE
 """
 
-
 def code_to_ast(code):
     # convert the code string to an AST
     return ast.parse(code)
@@ -33,14 +32,7 @@ def analyze_code(code):
     static_result = static_results_to_string(results)
     print(static_result)
 
-
 print(analyze_code(code))
-# print("Original code:")
-# print(code)
-# print("\nAST representation:")
-# ast_representation = code_to_ast(code)
-# print(ast.dump(ast_representation, indent=4))
-
 
 
 
