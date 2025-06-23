@@ -25,17 +25,19 @@ Confusion Matrix
 Table used to describe the performance of a classification model.
 Here, using Multiclass Classifier ( more than 2 ) namely (excellent, good, fair, poor)
 
-​
 
 Scalar fitting is done only on train data as test data is only supposed to be used for testing and not to be touched while training (can cause overfitting)
 
 Download file from here!!
 http://files.srl.inf.ethz.ch/data/py150.tar.gz
 
-Model Link ( 1/ 10th size)
-https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.pkl
+Model Link 
+https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.joblib
 
 Running model on kaggle for easier data loading (and not destroying my cpu)
+
+Currently
+- Using Gen AI with IBM watsonx to create suggestions rather then hardcoding them
 
 To Do
 - Integrate non ml and ml based evalutaion 
