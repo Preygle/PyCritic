@@ -38,6 +38,7 @@ Running model on kaggle for easier data loading (and not destroying my cpu)
 
 Currently
 - Using Gen AI with IBM watsonx to create suggestions rather then hardcoding them
+- Figuring out ai preferred ai model to do that
 
 To Do
 - Integrate non ml and ml based evalutaion 
