@@ -10,56 +10,6 @@ from ml_static_result import code_to_trained_format
 # Load environment variables
 load_dotenv()
 
-
-# def code_to_trained_format(code_string):
-#     """Convert Python code to AST format (your original function)"""
-#     nodes = []
-
-#     def add_node(node):
-#         index = len(nodes)
-#         node_dict = {"type": node.__class__.__name__}
-
-#         if isinstance(node, ast.Constant) and isinstance(node.value, str):
-#             node_dict["value"] = node.value
-#         elif isinstance(node, ast.Name):
-#             ctx = node.ctx.__class__.__name__
-#             node_dict["type"] = f"Name{ctx}"
-#             node_dict["value"] = node.id
-#         elif isinstance(node, ast.alias):
-#             node_dict["value"] = node.name
-#         elif isinstance(node, ast.Constant):
-#             node_dict["value"] = str(node.value)
-#         elif hasattr(node, 'name'):
-#             node_dict["value"] = node.name
-#         elif hasattr(node, 'arg'):
-#             node_dict["value"] = node.arg
-
-#         nodes.append(node_dict)
-
-#         children_indices = []
-#         for field, value in ast.iter_fields(node):
-#             if isinstance(value, list):
-#                 for item in value:
-#                     if isinstance(item, ast.AST):
-#                         child_index = add_node(item)
-#                         children_indices.append(child_index)
-#             elif isinstance(value, ast.AST):
-#                 child_index = add_node(value)
-#                 children_indices.append(child_index)
-
-#         if children_indices:
-#             nodes[index]["children"] = children_indices
-
-#         return index
-
-#     try:
-#         tree = ast.parse(code_string)
-#         add_node(tree)
-#         return nodes
-#     except Exception as e:
-#         return [{"type": "Error", "value": str(e)}]
-
-
 def initialize_ai_model():
     """Initialize the Watson AI model"""
     apikey = os.getenv("API_KEY")
@@ -70,12 +20,14 @@ def initialize_ai_model():
         raise ValueError("Missing required environment variables")
 
     model = ModelInference(
-        model_id="meta-llama/llama-3-3-70b-instruct",
+        model_id="mistralai/mistral-small-3-1-24b-instruct-2503",
         credentials={"apikey": apikey, "url": url},
+        # repetition_penalty=1.2 for prompt to not regenerate same suggestions
         params={
             GenParams.MAX_NEW_TOKENS: 500,
             GenParams.TEMPERATURE: 0.7,
-            GenParams.DECODING_METHOD: DecodingMethods.SAMPLE
+            GenParams.DECODING_METHOD: DecodingMethods.SAMPLE,
+            GenParams.REPETITION_PENALTY: 1.2,
         },
         project_id=project_id
     )
@@ -83,17 +35,35 @@ def initialize_ai_model():
 
 
 def create_ast_analysis_prompt(ast_data):
-    """Create prompt for AST analysis"""
     return f"""
-Analyze this Python AST and provide:
-1. Code functionality assessment
-2. Quality evaluation
-3. Improvement suggestions
+You are a Python code review teacher. Analyze the following code's AST structure and provide specific feedback.
 
-AST Data:
-{ast_data}
+AST Data: {ast_data}
 
-Focus on the AST structure and node patterns.
+Your task is to examine this code and provide detailed feedback as a teacher would:
+
+**Step 1: Identify ALL naming convention violations**
+Look through the AST for these specific elements and check each one:
+- Functions (should be snake_case)
+- Classes (should be PascalCase) 
+- Variables (should be snake_case)
+- Constants (should be UPPER_SNAKE_CASE)
+
+**Step 2: Find structural issues**
+- Import statement problems
+- Code complexity issues
+- Any other structural concerns
+
+**Step 3: Provide teaching-style feedback**
+For each issue found, explain:
+- What is wrong
+- Why it's wrong according to PEP 8
+- How to fix it
+- Why the fix improves the code
+
+Write your response as if you're grading a student's assignment. Be specific about what you found in THIS code, not generic examples.
+
+Begin your analysis now:
 """
 
 
@@ -108,15 +78,18 @@ def analyze_code_with_ai(code, model):
 if __name__ == "__main__":
     # Example Python code to analyze
     test_code = """
-def calculate_sum(a, b):
+CONSTANT_vALUE = 42
+def Calculate_sum(a, b):
     return a + b
 
+import pandas as np
 class Calculator:
     def __init__(self):
         self.value = 0
     
-    def add(self, x):
+    def ADD(self, x):
         self.value += x
+        self.value += CONSTANT_vALUE
         return self.value
 """
 
