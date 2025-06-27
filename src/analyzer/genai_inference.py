@@ -36,32 +36,31 @@ def initialize_ai_model():
 
 def create_ast_analysis_prompt(ast_data):
     return f"""
-You are a Python code review teacher. Analyze the following code's AST structure and provide specific feedback.
+You are a Python code review teacher. Analyze the following code's AST structure and provide specific feedback. Your feedback should not inlcude logical, syntax or any other form of error
 
 AST Data: {ast_data}
 
 Your task is to examine this code and provide detailed feedback as a teacher would:
 
-**Step 1: Identify ALL naming convention violations**
-Look through the AST for these specific elements and check each one:
+Look through the AST for these specific elements and check each one, if there are none, no need to write anything about it in your re4sponse only write whats wrong
+:
 - Functions (should be snake_case)
 - Classes (should be PascalCase) 
 - Variables (should be snake_case)
 - Constants (should be UPPER_SNAKE_CASE)
-
-**Step 2: Find structural issues**
-- Import statement problems
+- Imports (make sure the imported library is used and also make sure the chosed alias for the library is correct i.e. correct user if he's importing numpy as pd)
 - Code complexity issues
 - Any other structural concerns
 
-**Step 3: Provide teaching-style feedback**
 For each issue found, explain:
-- What is wrong
-- Why it's wrong according to PEP 8
+- What is wrong (tell me the specific naming convention that is violated)
 - How to fix it
-- Why the fix improves the code
 
-Write your response as if you're grading a student's assignment. Be specific about what you found in THIS code, not generic examples.
+Make sure step your suggestions are as brief as possible while encompassing all the rules mentioned above.
+
+Your responses should be brief (must identify any wrong naming convention, tell where the mistake is made and make suggestion. each suggestion should be at max 25 words).
+ Be specific about what you found in THIS code, not generic examples. Your suggestion should be more point like and not descriptive
+ DO NOT create any summary of your generated answers, i just need violations, corrected name/code and nothing more
 
 Begin your analysis now:
 """
