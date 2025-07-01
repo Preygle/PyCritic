@@ -27,3 +27,4 @@ ibm-watson-ai
 ibm-cloud-sdk-core
 ibm-watson-machine-learning
 python-dotenv
+google-generativeai
