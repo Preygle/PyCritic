@@ -36,6 +36,11 @@ https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.joblib
 
 Running model on kaggle for easier data loading (and not destroying my cpu)
 
+Gen AI model for inference: mistral-small-3-1-24b-instruct-2503 from IBM
+
+Testing: 
+- gemini-2.0-flash (free in google AI studio)
+
 Currently
 - Using Gen AI with IBM watsonx to create suggestions rather then hardcoding them
 - Figuring out ai preferred ai model to do that
