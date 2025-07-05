@@ -1,3 +1,5 @@
+#Testing the IBM Watsonx AI Model API with a supported model
+
 import os
 from dotenv import load_dotenv
 from ibm_watsonx_ai.foundation_models import ModelInference
