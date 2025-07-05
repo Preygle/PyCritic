@@ -2,9 +2,7 @@ import streamlit as st
 from code_suggester import CodeSuggester
 
 st.set_page_config(page_title="PyCritic", layout="wide")
-
 st.title("PyCritic: Python Code Analysis")
-
 st.write("Upload a Python file to get a complete analysis of your code, including naming conventions, import issues, and a quality score.")
 
 uploaded_file = st.file_uploader("Choose a Python file", type="py")
@@ -33,6 +31,7 @@ if uploaded_file is not None:
                     "poor": "🔴",
                 }
 
+                # Display quality scores in columns
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     quality = quality_scores.get("quality", "N/A")
