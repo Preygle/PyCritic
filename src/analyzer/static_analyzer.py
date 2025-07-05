@@ -1,12 +1,11 @@
 import ast
 import re
-
-
 class StaticCodeAnalyzer:
     def __init__(self):
         pass
 
     def check_naming_conventions(self, code_string: str) -> dict:
+        #Runner function for static analysis of naming conventions
         try:
             tree = ast.parse(code_string)
         except SyntaxError:
@@ -25,6 +24,7 @@ class StaticCodeAnalyzer:
         return {'violations': violations}
 
     def _check_function_naming(self, node: ast.FunctionDef, code_lines) -> list:
+        # Check function naming conventions
         violations = []
         name = node.name
         line = self._get_line_from_code(code_lines, node.lineno)
@@ -51,6 +51,7 @@ class StaticCodeAnalyzer:
         return violations
 
     def _check_class_naming(self, node: ast.ClassDef, code_lines) -> list:
+        # Check class naming conventions
         violations = []
         name = node.name
         line = self._get_line_from_code(code_lines, node.lineno)
@@ -67,6 +68,7 @@ class StaticCodeAnalyzer:
         return violations
 
     def _check_variable_naming(self, node: ast.Assign, code_lines) -> list:
+        # Check variable naming conventions
         violations = []
         for target in node.targets:
             if isinstance(target, ast.Name):
@@ -103,10 +105,12 @@ class StaticCodeAnalyzer:
         return violations
 
     def _get_line_from_code(self, code_lines, lineno):
+        # Get the line of code from the code string
         if 1 <= lineno <= len(code_lines):
             return code_lines[lineno - 1].strip()
         return ""
 
+    # Helper methods for naming conventions
     def _to_snake_case(self, name: str) -> str:
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         s2 = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1)
