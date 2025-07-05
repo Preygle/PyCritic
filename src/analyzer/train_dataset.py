@@ -18,7 +18,6 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 DATA_DIR = ""
 
 # Filenames for the dataset
-# Note: The actual dataset from Kaggle has '.jsonl' extension
 TRAIN_FILENAME = "python100k_train.json"
 EVAL_FILENAME = "python50k_eval.json"
 
