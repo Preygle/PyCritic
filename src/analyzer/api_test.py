@@ -1,4 +1,4 @@
-#Testing the IBM Watsonx AI Model API with a supported model
+#Testing the IBM Watsonx AI Model API with a supported model (NOT USED IN PROJECT)
 
 import os
 from dotenv import load_dotenv
