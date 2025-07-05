@@ -24,7 +24,7 @@ class StaticCodeAnalyzer:
         return {'violations': violations}
 
     def _check_function_naming(self, node: ast.FunctionDef, code_lines) -> list:
-        # Check function naming conventions
+        # function to check function naming conventions
         violations = []
         name = node.name
         line = self._get_line_from_code(code_lines, node.lineno)
@@ -51,7 +51,7 @@ class StaticCodeAnalyzer:
         return violations
 
     def _check_class_naming(self, node: ast.ClassDef, code_lines) -> list:
-        # Check class naming conventions
+        # function to check class naming conventions
         violations = []
         name = node.name
         line = self._get_line_from_code(code_lines, node.lineno)
@@ -126,15 +126,14 @@ class StaticCodeAnalyzer:
 # Example usage
 if __name__ == "__main__":
     analyzer = StaticCodeAnalyzer()
-    test_code = """
-class ProperClass:
-    def correct_method(self):
-        proper_variable = 42
-        MAX_vALUE = 100
-        _private_var = "secret"
-        
-        return proper_variable * MAX_VALUE
-"""
+    file_path = "code_check.py"
+    try:
+        with open(file_path, "r") as f:
+            test_code = f.read()
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+        exit()
+    
     result = analyzer.check_naming_conventions(test_code)
     for violation in result['violations']:
         print(f"Line {violation['line']}: {violation['explanation']}")
