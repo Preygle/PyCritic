@@ -13,5 +13,16 @@ env/
 *.pkl
 *.tar*
 *.json
+*.env
 
-
+# Specific files to ignore
+prj.txt
+resizable_overlay.py
+src/analyzer/.env
+src/analyzer/.gitattributes
+src/analyzer/code-suggestion-model/
+src/analyzer/joblib_result
+src/analyzer/temp.txt
+src/analyzer/tempCodeRunnerFile.py
+src/analyzer/template.pdf
+src/analyzer/train_joblib
