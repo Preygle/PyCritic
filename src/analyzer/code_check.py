@@ -1,20 +1,20 @@
 
-# Sample code for testing the PyCritic analysis
+# Sample code for testing. Contains all possible issues that the analyzer should catch.
 
-CONSTANT_vALUE = 42
+CONSTANT_vALUE = 42 # Incorrect constant naming, should be UPPER_SNAKE_CASE
 
-def Calculate_sum(a, b):
+def Calculate_sum(a, b): #func. name not in snake_case
     # This function is not very good
-    return a + b
+    return a + b #not descriptive variable names
 
-import pandas as np # Incorrect alias
+import pandas as np # Incorrect alias SHOULD BE pd. Also, this import is not used anywhere in the code
 
-class my_class:
+class my_class: # class name not in PascalCase
     def __init__(self):
         self.someValue = 0
     
-    def ADD(self, x):
-        self.someValue += x
+    def ADD(self, x): # Function name not in snake_case, SHOULD BE add
+        self.someValue += x # not descriptive variable name
         self.someValue += CONSTANT_vALUE
         return self.someValue
 
