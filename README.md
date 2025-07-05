@@ -1,4 +1,4 @@
-# PyCritic: Python Code Analysis
+# PyCritic: Your AI Guide to PEP8-Compliant Python Code
 
 This project aims to provide comprehensive analysis for Python code, combining traditional static analysis with machine learning and generative AI techniques.
 
@@ -29,6 +29,8 @@ Table used to describe the performance of a classification model. Here, using Mu
 
 ### Project Notes
 *   Scalar fitting is done only on train data as test data is only supposed to be used for testing and not to be touched while training (can cause overfitting).
+*   Timing function to test UI hadling of large files was temporary
+*   api_test.py was test case to check how IBM watson was working (gemini 2.0 is used to avoid rate issues)
 ---
 
 ## Important Links
@@ -44,7 +46,10 @@ Table used to describe the performance of a classification model. Here, using Mu
 ### To Do
 
 *   Create VS Code extension for this.
-
+*   Deploy using Streamlit.io
+*   Enhance code quality rater by using labled data to train
+*   Use feedback loop to improve static and well as ML rules
+*   Auto correct the code based on the suggestion provided
 ---
 
 ## Project Setup
