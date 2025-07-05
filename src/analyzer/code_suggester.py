@@ -15,16 +15,23 @@ class CodeSuggester:
         self.ai_model = self._initialize_ai_model()
         self.ml_model = self._load_saved_model()
 
+
+    # Initialize the AI model with error handling
     def _initialize_ai_model(self):
-        """Initialize the Gemini AI model"""
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("Missing GEMINI_API_KEY environment variable")
+        """Initialize the Gemini AI model with error handling"""
+        try:
+            api_key = os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                raise ValueError("Missing GEMINI_API_KEY environment variable.")
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-2.0-flash')
+            return model
 
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        return model
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize Gemini model: {e}")
+            return None
 
+    # Load the saved ML model with error handling
     def _load_saved_model(self, model_path="code_eval_w_150k.joblib"):
         """Load the saved ML model from .joblib"""
         try:
@@ -36,14 +43,14 @@ class CodeSuggester:
             return None
 
     def generate_suggestions(self, code_string: str) -> dict:
-        # 1. Static Analysis for Naming Conventions
+        # Static Analysis for Naming Conventions
         static_analyzer = StaticCodeAnalyzer()
         naming_violations = static_analyzer.check_naming_conventions(code_string)
 
-        # 2. ML-based Code Scoring
+        # ML-based Code Scoring
         ml_results = self._get_ml_analysis(code_string)
 
-        # 3. GenAI for Import Analysis and Summary
+        # GenAI for Import Analysis and Summary
         import_suggestions, summary = self._get_ai_suggestions(code_string)
 
         return {
@@ -53,6 +60,7 @@ class CodeSuggester:
             "summary": summary
         }
 
+    # Get ML-based analysis results
     def _get_ml_analysis(self, code_string: str) -> dict:
         if not self.ml_model:
             return {}
@@ -77,6 +85,7 @@ class CodeSuggester:
             "style": style_pred
         }
 
+    # Get AI-generated suggestions for imports and summary
     def _get_ai_suggestions(self, code_string: str) -> tuple[str, str]:
         import_prompt = self._create_import_prompt(code_string)
         summary_prompt = self._create_summary_prompt(code_string)
@@ -87,6 +96,7 @@ class CodeSuggester:
         except Exception as e:
             return f"Error generating AI suggestions: {e}", ""
 
+    # Create prompts for import analysis
     def _create_import_prompt(self, code: str) -> str:
         return f"""
         You are a Python code analysis tool. Your ONLY task is to analyze the import statements in the following code and provide feedback in a specific format. Do NOT generate any other content.
@@ -119,6 +129,7 @@ class CodeSuggester:
         Begin your analysis now. Remember, ONLY import analysis.
         """
 
+    # Create a prompt for summarizing code 
     def _create_summary_prompt(self, code: str) -> str:
         return f"""
         You are a Python code analysis tool. Your ONLY task is to provide a brief, high-level summary of the following code quality feedback in 5 lines or less. Do NOT generate any other content.
@@ -130,31 +141,14 @@ class CodeSuggester:
         Provide a short, high-level summary of the code quality issues and suggest general improvements. Each suggestion should be a markdown list item (e.g., `- Suggestion text`). Do NOT include any code snippets or specific examples.
         """
 
+    # Format the output in markdown
     def _format_markdown_output(self, naming_violations, ml_results, import_suggestions, summary) -> str:
         markdown_output = "### Code Review Suggestions\n\n"
-
-        # Naming Violations
-        if naming_violations.get('violations'):
-            markdown_output += "**Naming Conventions**\n"
-            for violation in naming_violations['violations']:
-                markdown_output += f"- **Line {violation['line']}:** `{violation['original']}`\n"
-                markdown_output += f"  - **Suggestion:** {violation['explanation']}\n"
-                if violation.get('corrected'):
-                    markdown_output += f"  - **Correction:** `{violation['corrected']}`\n"
-            markdown_output += "---\n"
 
         # Import Suggestions
         if import_suggestions:
             markdown_output += "**Import Analysis**\n"
             markdown_output += f"{import_suggestions}\n"
-            markdown_output += "---\n"
-
-        # ML Code Scoring
-        if ml_results:
-            markdown_output += "**Code Quality Score**\n"
-            markdown_output += f"- **Quality:** {ml_results.get('quality', 'N/A')}\n"
-            markdown_output += f"- **Naming:** {ml_results.get('naming', 'N/A')}\n"
-            markdown_output += f"- **Style:** {ml_results.get('style', 'N/A')}\n"
             markdown_output += "---\n"
 
         # AI-Generated Summary
@@ -164,22 +158,26 @@ class CodeSuggester:
 
         return markdown_output
 
+# Main function to run the code suggester
 if __name__ == '__main__':
     suggester = CodeSuggester()
-    test_code = """
-import pandas as np
-import os
-from sys import exit
-
-CONSTANT_vALUE = 42
-
-class my_class:
-    def BAD_FUNCTION_NAME(self, some_val):
-        local_var = some_val + CONSTANT_vALUE
-        return local_var
-
-def anotherFunction():
-    pass
-"""
-    markdown_output = suggester.generate_suggestions(test_code)
-    print(markdown_output)
+    file_path = "code_check.py"
+    try:
+        with open(file_path, "r") as f:
+            test_code = f.read()
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+        exit()
+    all_suggestions = suggester.generate_suggestions(test_code)
+    
+    import_suggestions = all_suggestions.get("import_suggestions", "")
+    summary = all_suggestions.get("summary", "")
+    
+    formatted_output = suggester._format_markdown_output(
+        naming_violations={},
+        ml_results={},
+        import_suggestions=import_suggestions,
+        summary=summary
+    )
+    
+    print(formatted_output)
