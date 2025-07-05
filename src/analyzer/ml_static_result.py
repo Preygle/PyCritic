@@ -6,18 +6,8 @@ from collections import defaultdict
 import re
 from static_analyzer import StaticCodeAnalyzer
 
-code = """
-import numpy as np
 
-class ProperClass:
-    def correct_method(self):
-        proper_variable = 42
-        MAX_vALUE = 100
-        _private_var = "secret"
-        return proper_variable * MAX_VALUE
-"""
-
-
+# Initialize the AI model with error handling
 def load_saved_model():
     """Load the saved ML model from .joblib"""
     model_file = "code_eval_w_150k.joblib"
@@ -29,7 +19,7 @@ def load_saved_model():
         print(f"Error loading model: {e}")
         return None
 
-
+# Convert Python code to a format suitable for infereince by a custom ML model (format based on python 150k dataset).
 def code_to_trained_format(code_string):
     nodes = []
 
@@ -77,16 +67,17 @@ def code_to_trained_format(code_string):
     except Exception as e:
         return [{"type": "Error", "value": str(e)}]
 
-
+# Convert Python code to AST format
 def code_to_ast(code):
     return ast.parse(code)
 
 
+# Static code analyzer for naming conventions
 def static_analyzer(code):
     analyzer = StaticCodeAnalyzer()
     return analyzer.check_naming_conventions(code)
 
-
+# Convert static analysis results to a string format for display
 def static_results_to_string(code):
     analyzer = StaticCodeAnalyzer()
     results =  analyzer.check_naming_conventions(code)
@@ -101,54 +92,47 @@ def static_results_to_string(code):
 
 
 def analyze_code(code):
-    print("=== STATIC ANALYSIS ===")
     static_result = static_results_to_string(code)
-    print(static_result)
+    # print(static_result)
 
-    print("\n=== ML ANALYSIS ===")
     ast_json = code_to_trained_format(code)
-    print(f"Converted to AST format:\n {ast_json}\n\n")
+    # print(f"Converted to AST format:\n {ast_json}\n\n")
 
     model_data = load_saved_model()  # This returns the dictionary
     if model_data is not None:
         try:
-            # Import the predict function from your training script
             from train_dataset import predict, load_model
 
-            # Load the model using the function from training script
+            # Load the model using the function from train_dataset
             load_model("code_eval_w_150k.joblib")
 
             # Now use the predict function
             ml_results = predict(ast_json)
 
+            # Print the results
             print("ML Analysis Results:")
             print(f" Quality: {ml_results.get('quality', 'N/A')}")
             print(f" Naming: {ml_results.get('naming', 'N/A')}")
             print(f" Style: {ml_results.get('style', 'N/A')}")
 
-            if 'suggestions' in ml_results:
-                print("\nML Suggestions:")
-                for suggestion in ml_results['suggestions']:
-                    print(f" - {suggestion}")
-            return static_result, ml_results
         except Exception as e:
             print(f"Error running ML analysis: {e}")
-            print("This might be due to model format incompatibility")
             return ""
     else:
         print("Could not load ML model")
 
     return None
 
-def runner():
-    """Run the analysis on the provided code."""
-    analyze_code(code)
 
 # Run the analysis
 if __name__ == "__main__":
-   analyze_code(code)
-    # You can replace 'code' with any other code string you want to analyze
-    # For example, you can read from a file or take input from the user
-    # with open('your_code_file.py', 'r') as f:
-    #     code = f.read()
-    #     analyze_code(code)
+    file_path = "code_check.py"
+    try:
+        with open(file_path, "r") as f:
+            code = f.read()
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+        exit()
+
+    analyze_code(code)
+
