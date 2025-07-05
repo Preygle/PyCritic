@@ -1,4 +1,3 @@
-
 import streamlit as st
 from code_suggester import CodeSuggester
 
@@ -37,23 +36,28 @@ if uploaded_file is not None:
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     quality = quality_scores.get("quality", "N/A")
-                    st.metric("Quality", f'{quality_emojis.get(quality, "")} {quality.capitalize()}')
+                    st.metric(
+                        "Quality", f'{quality_emojis.get(quality, "")} {quality.capitalize()}')
                 with col2:
                     naming = quality_scores.get("naming", "N/A")
-                    st.metric("Naming", f'{quality_emojis.get(naming, "")} {naming.capitalize()}')
+                    st.metric(
+                        "Naming", f'{quality_emojis.get(naming, "")} {naming.capitalize()}')
                 with col3:
                     style = quality_scores.get("style", "N/A")
-                    st.metric("Style", f'{quality_emojis.get(style, "")} {style.capitalize()}')
+                    st.metric(
+                        "Style", f'{quality_emojis.get(style, "")} {style.capitalize()}')
                 st.write("---")
 
             # Display Naming Violations in an expander
             if results.get("naming_violations", {}).get("violations"):
                 with st.expander("Naming Conventions"):
                     for violation in results["naming_violations"]["violations"]:
-                        st.write(f"**Line {violation['line']}:** `{violation['original']}`")
+                        st.write(
+                            f"**Line {violation['line']}:** `{violation['original']}`")
                         st.write(f"> {violation['explanation']}")
                         if violation.get('corrected'):
-                            st.write(f"> **Correction:** `{violation['corrected']}`")
+                            st.write(
+                                f"> **Correction:** `{violation['corrected']}`")
                         st.write("")
 
             # Display Import Suggestions in an expander
