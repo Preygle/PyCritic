@@ -1,6 +1,6 @@
 # PyCritic: Your AI Guide to PEP8-Compliant Python Code
 
-This project aims to provide comprehensive analysis for Python code, combining traditional static analysis with machine learning and generative AI techniques.
+This project aims to provide comprehensive analysis for Python code, combining traditional static analysis with machine learning and generative AI techniques. The basic case check uses static analysis for inference. The ML model is used to give a rating (poor to excellent) based on Quality, Naming and Styling. Gen AI utilizing gemini 2.0 flash model is used to to check for correct valid imports and also give suggestions based on the score and mistakes made in the code. 
 
 ## Core Concepts & Definitions
 
@@ -67,15 +67,14 @@ PyCritic/
 │       ├── code_check.py
 │       ├── code_suggester.py
 │       ├── dataset_extractor.py
-│       ├── ml_model.py
-|       ├──  sample_env.txt
+|       ├── sample_env.txt
 │       ├── ml_static_result.py
-│       ├── parse_python.py
 │       ├── static_analyzer.py
 │       ├── train_dataset.py
-│       ├── transformer_eval.py
 │       ├── web_ui.py
-│       └── code-suggestion-model/
+│       ├── code_eval_w_150k.joblib
+│       ├── sample_1mb_python_code.py
+│       └── checked_code.py
 ├── dataset-train-kaggle.ipynb
 ├── README.md
 ├── requirements.txt
