@@ -26,3 +26,7 @@ src/analyzer/temp.txt
 src/analyzer/tempCodeRunnerFile.py
 src/analyzer/template.pdf
 src/analyzer/train_joblib
+src/analyzer/large_code_test.py
+src/analyzer/ml_model.py
+src/analyzer/parse_python.py
+src/analyzer/transformer_eval.py
