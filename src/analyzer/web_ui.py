@@ -1,8 +1,14 @@
 import streamlit as st
+import os
+
+# Change working directory to the script's directory to find model and .env files.
+script_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(script_dir)
+
 from code_suggester import CodeSuggester
 
 st.set_page_config(page_title="PyCritic", layout="wide")
-st.title("PyCritic: Python Code Analysis")
+st.title("PyCritic: Your AI Guide to PEP8-Compliant Python Code")
 st.write("Upload a Python file to get a complete analysis of your code, including naming conventions, import issues, and a quality score.")
 
 uploaded_file = st.file_uploader("Choose a Python file", type="py")
