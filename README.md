@@ -35,7 +35,7 @@ Table used to describe the performance of a classification model. Here, using Mu
 
 ## Important Links
 
-
+*   **Website:** [https://pycritic.streamlit.app/](https://pycritic.streamlit.app/)
 *   **Download Dataset:** [http://files.srl.inf.ethz.ch/data/py150.tar.gz](http://files.srl.inf.ethz.ch/data/py150.tar.gz)
 *   **ML Model Link:** [https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.joblib](https://huggingface.co/Preygle/PyCritic/blob/main/code_eval_w_150k.joblib)
 *   Running model on Kaggle for easier data loading (and not destroying my CPU).
@@ -46,7 +46,6 @@ Table used to describe the performance of a classification model. Here, using Mu
 ### To Do
 
 *   Create VS Code extension for this.
-*   Deploy using Streamlit.io
 *   Enhance code quality rater by using labled data to train
 *   Use feedback loop to improve static and well as ML rules
 *   Auto correct the code based on the suggestion provided
