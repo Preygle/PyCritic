@@ -35,6 +35,9 @@ class CodeSuggester:
     def _load_saved_model(self, model_path="code_eval_w_150k.joblib"):
         """Load the saved ML model from .joblib"""
         try:
+            # Construct an absolute path to the model file
+            script_dir = os.path.dirname(os.path.realpath(__file__))
+            model_path = os.path.join(script_dir, model_path)
             ml_model = joblib.load(model_path)
             print("ML Model loaded successfully!")
             return ml_model

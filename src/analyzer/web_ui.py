@@ -1,10 +1,4 @@
 import streamlit as st
-import os
-
-# Change working directory to the script's directory to find model and .env files.
-script_dir = os.path.dirname(os.path.realpath(__file__))
-os.chdir(script_dir)
-
 from code_suggester import CodeSuggester
 
 st.set_page_config(page_title="PyCritic", layout="wide")
